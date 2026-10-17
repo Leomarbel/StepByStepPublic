@@ -745,6 +745,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3004445860731677694}
+  - component: {fileID: 1254621859962018291}
   m_Layer: 0
   m_Name: 4_Step_Room
   m_TagString: Untagged
@@ -770,6 +771,21 @@ Transform:
   - {fileID: 2649194042225520195}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1254621859962018291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1922260383505247839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 997beaf3d85fcb34db0752e9a95b5a58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoomSection
+  entrance: {fileID: 5931195116955025215}
+  exits:
+  - {fileID: 2649194042225520195}
 --- !u!1 &2356128910020042370
 GameObject:
   m_ObjectHideFlags: 0
@@ -2275,6 +2291,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5931195116955025215}
+  - component: {fileID: 2196107493393317264}
+  - component: {fileID: 4236935141533036335}
   m_Layer: 0
   m_Name: Entrance
   m_TagString: Untagged
@@ -2291,12 +2309,45 @@ Transform:
   m_GameObject: {fileID: 6603887714054431452}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 2, y: 0, z: 15}
+  m_LocalPosition: {x: 2, y: 0, z: 16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3004445860731677694}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!65 &2196107493393317264
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6603887714054431452}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 1, z: 1}
+--- !u!114 &4236935141533036335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6603887714054431452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 724d3e967f8546f438919f6770f51a2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoomEntrance
 --- !u!1 &6653268654542791878
 GameObject:
   m_ObjectHideFlags: 0
@@ -2717,7 +2768,7 @@ Transform:
   m_GameObject: {fileID: 7491470130569105278}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 2, y: 0, z: 1}
+  m_LocalPosition: {x: 2, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

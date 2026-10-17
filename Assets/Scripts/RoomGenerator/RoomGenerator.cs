@@ -1,10 +1,15 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class RoomGenerator : MonoBehaviour
 {
     [SerializeField] private RoomSection startingRoom;
     [SerializeField] private RoomSection[] roomPrefabs;
-    [SerializeField, Min(1)] private int roomsToAdd = 5;
+    [SerializeField, Min(1)] private int roomsAhead = 5;
+    [SerializeField, Min(0)] private int roomsBehind = 2;
+
+    private readonly List<RoomSection> rooms = new();
+    private int currentIndex;
 
     private void Start()
     {
@@ -13,47 +18,89 @@ public class RoomGenerator : MonoBehaviour
             roomPrefabs.Length == 0)
         {
             Debug.LogError("Assign a starting room and room prefabs.", this);
+            enabled = false;
             return;
         }
 
-        RoomSection currentRoom = startingRoom;
+        startingRoom.Initialize(this);
+        rooms.Add(startingRoom);
+        MaintainRoomsAhead();
+    }
 
-        for (int i = 0; i < roomsToAdd; i++)
+    public void OnRoomEntered(RoomSection room)
+    {
+        if (!enabled) return;
+
+        int index = rooms.IndexOf(room);
+
+        if (index <= currentIndex) return; //Ignore current and rooms behind player
+
+        currentIndex = index;
+
+        MaintainRoomsAhead();
+        RemoveOldRooms();
+    }
+
+    private void MaintainRoomsAhead()
+    {
+        while (rooms.Count - currentIndex - 1 < roomsAhead)
         {
-            if (currentRoom.Exits == null ||
-                currentRoom.Exits.Length == 0)
+            if (!GenerateNextRoom())
                 break;
+        }
+    }
 
-            Transform exit = currentRoom.Exits[
-                Random.Range(0, currentRoom.Exits.Length)
-            ];
+    private bool GenerateNextRoom()
+    {
+        RoomSection lastRoom = rooms[rooms.Count - 1];
 
-            RoomSection prefab = roomPrefabs[
-                Random.Range(0, roomPrefabs.Length)
-            ];
+        if (lastRoom.Exits == null || lastRoom.Exits.Length == 0)
+        {
+            Debug.LogError("The last room has no exits.", lastRoom);
+            return false;
+        }
+        Transform exit = lastRoom.Exits[
+            Random.Range(0, lastRoom.Exits.Length)
+        ];
 
-            if (exit == null || prefab == null ||
-                prefab.Entrance == null)
-            {
-                Debug.LogError("A room connection is missing.", this);
-                break;
-            }
+        RoomSection prefab = roomPrefabs[
+            Random.Range(0, roomPrefabs.Length)
+        ];
 
-            RoomSection nextRoom = Instantiate(prefab);
+        if (exit == null || prefab == null ||
+            prefab.Entrance == null)
+        {
+            Debug.LogError("A room prefab or connection is missing.", this);
+            return false;
+        }
 
-            // Rotate the whole room to align its entrance direction.
-            Quaternion rotationDifference =
-                exit.rotation *
-                Quaternion.Inverse(nextRoom.Entrance.rotation);
+        RoomSection nextRoom = Instantiate(prefab);
 
-            nextRoom.transform.rotation =
-                rotationDifference * nextRoom.transform.rotation;
+        Quaternion rotationDifference =
+            exit.rotation *
+            Quaternion.Inverse(nextRoom.Entrance.rotation);
 
-            // Move the whole room to align its entrance position.
-            nextRoom.transform.position +=
-                exit.position - nextRoom.Entrance.position;
+        nextRoom.transform.rotation =
+            rotationDifference * nextRoom.transform.rotation;
 
-            currentRoom = nextRoom;
+        nextRoom.transform.position +=
+            exit.position - nextRoom.Entrance.position;
+
+        nextRoom.Initialize(this);
+        rooms.Add(nextRoom);
+
+        return true;
+    }
+    private void RemoveOldRooms()
+    {
+        while (currentIndex > roomsBehind)
+        {
+            RoomSection oldestRoom = rooms[0];
+
+            rooms.RemoveAt(0);
+            currentIndex--;
+
+            Destroy(oldestRoom.gameObject);
         }
     }
 }
