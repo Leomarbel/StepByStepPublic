@@ -732,7 +732,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerRb: {fileID: 527980175}
-  moveSpeed: 0.5
+  moveSpeed: 0.25
   stepSize: 1
   _avoidCooldownDuration: 1
   _playerCenterPos: {fileID: 330585546}
