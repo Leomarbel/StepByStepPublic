@@ -6,10 +6,12 @@ public class RoomGenerator : MonoBehaviour
     [SerializeField] private RoomSection startingRoom;
     [SerializeField] private RoomSection[] roomPrefabs;
     [SerializeField, Min(1)] private int roomsAhead = 5;
-    [SerializeField, Min(0)] private int roomsBehind = 2;
 
-    private readonly List<RoomSection> rooms = new();
-    private int currentIndex;
+    [SerializeField, Min(0)] private int minRoomsBetweenCorners = 3;
+
+    public event System.Action EntrancePassed;
+    private RoomSection currentRoom;
+
 
     private void Start()
     {
@@ -22,85 +24,119 @@ public class RoomGenerator : MonoBehaviour
             return;
         }
 
-        startingRoom.Initialize(this);
-        rooms.Add(startingRoom);
-        MaintainRoomsAhead();
+        currentRoom = startingRoom;
+        currentRoom.Initialize(this);
+
+        GenerateAhead(currentRoom, roomsAhead);
+
     }
+    
 
     public void OnRoomEntered(RoomSection room)
     {
-        if (!enabled) return;
+        if (!enabled || currentRoom == null || room == null) return;
+        if (room.Parent != currentRoom) return;
 
-        int index = rooms.IndexOf(room);
+        RoomBranchHandler.KeepChosenBranch(currentRoom, room);
 
-        if (index <= currentIndex) return; //Ignore current and rooms behind player
+        EntrancePassed?.Invoke();
 
-        currentIndex = index;
+        currentRoom.PlayerLeft();
 
-        MaintainRoomsAhead();
-        RemoveOldRooms();
+        currentRoom = room;
+
+
+        GenerateAhead(currentRoom, roomsAhead);
+
     }
 
-    private void MaintainRoomsAhead()
+    private void GenerateAhead(RoomSection room, int depth)
     {
-        while (rooms.Count - currentIndex - 1 < roomsAhead)
+        if (depth <= 0) return;
+
+        if (!room.Expanded)
         {
-            if (!GenerateNextRoom())
-                break;
+            GenerateChildren(room);
+        }
+
+        foreach (RoomSection child in room.Children)
+        {
+            GenerateAhead(child, depth - 1);
         }
     }
 
-    private bool GenerateNextRoom()
+    private void GenerateChildren(RoomSection room)
     {
-        RoomSection lastRoom = rooms[rooms.Count - 1];
+        room.Expanded = true;
 
-        if (lastRoom.Exits == null || lastRoom.Exits.Length == 0)
+        if (room.Exits == null) return;
+
+        foreach (Transform exit in room.Exits)
         {
-            Debug.LogError("The last room has no exits.", lastRoom);
-            return false;
+            if (exit == null)
+            {
+                Debug.LogError(
+                    "A room has an unassigned exit.", room);
+
+                continue;
+            }
+
+            RoomSection child = SpawnRoom(exit, room);
+
+            if (child == null) continue;
+
+            child.Initialize(this, room);
+            room.Children.Add(child);
         }
-        Transform exit = lastRoom.Exits[
-            Random.Range(0, lastRoom.Exits.Length)
-        ];
+    }
 
-        RoomSection prefab = roomPrefabs[
-            Random.Range(0, roomPrefabs.Length)
-        ];
+    private RoomSection SpawnRoom(Transform exit, RoomSection parent)
+    {
+        List<RoomSection> allowedPrefabs = new();
 
-        if (exit == null || prefab == null ||
-            prefab.Entrance == null)
+        foreach (RoomSection prefab in roomPrefabs)
         {
-            Debug.LogError("A room prefab or connection is missing.", this);
-            return false;
+            if (prefab == null || prefab.Entrance == null)
+                continue;
+
+            bool cornerAllowed =
+                parent.RoomsSinceCorner >= minRoomsBetweenCorners;
+
+            if (!prefab.IsCorner || cornerAllowed)
+                allowedPrefabs.Add(prefab);
         }
 
-        RoomSection nextRoom = Instantiate(prefab);
+        if (allowedPrefabs.Count == 0)
+        {
+            Debug.LogError(
+                "No eligible room prefab. Assign a non-corner prefab.",
+                this);
 
+            return null;
+        }
+
+        RoomSection selected =
+            allowedPrefabs[Random.Range(0, allowedPrefabs.Count)];
+
+        RoomSection room = Instantiate(selected);
+
+        // Align the entrance direction with the exit direction.
         Quaternion rotationDifference =
             exit.rotation *
-            Quaternion.Inverse(nextRoom.Entrance.rotation);
+            Quaternion.Inverse(room.Entrance.rotation);
 
-        nextRoom.transform.rotation =
-            rotationDifference * nextRoom.transform.rotation;
+        room.transform.rotation =
+            rotationDifference * room.transform.rotation;
 
-        nextRoom.transform.position +=
-            exit.position - nextRoom.Entrance.position;
+        // Align their positions.
+        room.transform.position +=
+            exit.position - room.Entrance.position;
 
-        nextRoom.Initialize(this);
-        rooms.Add(nextRoom);
+        room.RoomsSinceCorner = room.IsCorner
+            ? 0
+            : parent.RoomsSinceCorner + 1;
 
-        return true;
+        return room;
     }
-    private void RemoveOldRooms()
-    {
-        while (currentIndex > roomsBehind)
-        {
-            RoomSection oldestRoom = rooms[0];
-
-            rooms.RemoveAt(0);
-            currentIndex--;
-
-            Destroy(oldestRoom.gameObject);
-        }
-    }
+    
 }

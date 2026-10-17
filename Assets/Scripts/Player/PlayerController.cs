@@ -339,8 +339,16 @@ public class PlayerController : MonoBehaviour
 
     #region Turning Manager
 
+    private CenterAnchor pendingCorner;
+
     public void BeginCenterAlignment(CenterAnchor anchor)
     {
+        if (isStumbling)
+        {
+            pendingCorner = anchor;
+            return;
+        }
+
         currentAnchor = anchor;
         state = PlayerState.AligningToCenter;
     }
@@ -495,6 +503,14 @@ public class PlayerController : MonoBehaviour
 
         isStumbling = false;
         state = PlayerState.Walking;
+
+        if (pendingCorner != null)
+        {
+            CenterAnchor anchor = pendingCorner;
+            pendingCorner = null;
+
+            BeginCenterAlignment(anchor);
+        }
     }
     #endregion
     void HandleStuckInput()

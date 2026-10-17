@@ -138,6 +138,8 @@ MonoBehaviour:
   entrance: {fileID: 5817168604620465653}
   exits:
   - {fileID: 1171113643116938727}
+  entrancesBeforeDestroy: 5
+  isCorner: 0
 --- !u!1 &1196784860305478760
 GameObject:
   m_ObjectHideFlags: 0
@@ -1767,6 +1769,8 @@ MonoBehaviour:
   entrance: {fileID: 5817168604620465653}
   exits:
   - {fileID: 1171113643116938727}
+  entrancesBeforeDestroy: 2
+  isCorner: 1
 --- !u!1 &3895001967271485479
 GameObject:
   m_ObjectHideFlags: 0

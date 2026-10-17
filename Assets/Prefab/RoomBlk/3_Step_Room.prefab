@@ -2347,6 +2347,7 @@ MonoBehaviour:
   entrance: {fileID: 7080662788698985101}
   exits:
   - {fileID: 4873960512637451864}
+  entrancesBeforeDestroy: 2
 --- !u!1 &5358122771985750618
 GameObject:
   m_ObjectHideFlags: 0

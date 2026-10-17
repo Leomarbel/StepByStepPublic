@@ -11,11 +11,7 @@ public class RoomEntrance : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("ga");
         if (!other.CompareTag("Player")) return;
-
-
-
         room.PlayerEntered();
     }
 }
